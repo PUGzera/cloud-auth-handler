@@ -1,0 +1,14 @@
+postgres:
+  auth:
+    db: keycloak
+    username: test
+    password: testpassword
+  service:
+    port: 5432
+
+ingress:
+  host: auth.192.168.49.2.nip.io
+
+keycloak:
+  client:
+    secret: NOTVERYSECRET23
