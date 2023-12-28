@@ -1,0 +1,32 @@
+repositories:
+ - name: jetstack
+   url: https://charts.jetstack.io
+
+
+environments:
+  default:
+    values:
+    - values.yaml
+
+releases:
+{{ if .Values.tls.enabled }}
+- name: cert-manager
+  namespace: cert-manager
+  createNamespace: true   
+  chart: jetstack/cert-manager
+  set:
+  - name: installCRDs
+    value: true
+{{ end }}
+- name: auth-handler
+  namespace: auth-handler
+  createNamespace: true   
+  chart: auth-handler
+  disableValidationOnInstall: true
+  set:
+  - name: tls.enabled
+    value: {{ .Values.tls.enabled }}
+{{ if .Values.tls.enabled }}
+  needs:
+    - cert-manager/cert-manager
+{{ end }}

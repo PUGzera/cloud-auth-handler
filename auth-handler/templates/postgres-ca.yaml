@@ -1,0 +1,9 @@
+{{ if .Values.tls.enabled }}
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ include "auth-handler.name" . }}-postgres-ca
+spec:
+  ca:
+    secretName: {{ include "auth-handler.name" . }}-ca-cert
+{{ end }}

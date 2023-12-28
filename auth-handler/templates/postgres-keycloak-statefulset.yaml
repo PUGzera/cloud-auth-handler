@@ -13,13 +13,30 @@ spec:
       labels:
         app: {{ include "auth-handler.name" . }}-keycloak-postgresql-db
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
       containers:
         - name: {{ include "auth-handler.name" . }}-keycloak-postgresql-db
           image: postgres:latest
-          volumeMounts:
-            - mountPath: /data
-              name: cache-volume
+          args:
+          {{ if .Values.tls.enabled }}
+            - "-c" 
+            - "ssl=on"
+            - "-c" 
+            - "ssl_cert_file=/var/run/secrets/{{ include "auth-handler.name" . }}-postgres-server-cert/tls.crt"
+            - "-c" 
+            - "ssl_key_file=/var/run/secrets/{{ include "auth-handler.name" . }}-postgres-server-cert/tls.key"
+            - "-c" 
+            - "ssl_ca_file=/var/run/secrets/{{ include "auth-handler.name" . }}-ca-cert/ca.crt"
+          {{ end }}
           env:
+          {{ if .Values.tls.enabled }}
+            - name: PGSSLMODE
+              value: verify-ca
+          {{ end }}
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
@@ -30,13 +47,29 @@ spec:
                 secretKeyRef:
                   name: {{ include "auth-handler.name" . }}-keycloak-postgres-db-secret
                   key: password
-            - name: PGDATA
-              value: /data/pgdata
             - name: POSTGRES_DB
               valueFrom:
                 secretKeyRef:
                   name: {{ include "auth-handler.name" . }}-keycloak-postgres-db-secret
                   key: db
+          volumeMounts:
+          {{ if .Values.tls.enabled }}
+          - name: {{ include "auth-handler.name" . }}-postgres-server-cert
+            readOnly: true
+            mountPath: "/var/run/secrets/{{ include "auth-handler.name" . }}-postgres-server-cert"
+          - name: {{ include "auth-handler.name" . }}-ca-cert
+            readOnly: true
+            mountPath: "/var/run/secrets/{{ include "auth-handler.name" . }}-ca-cert"
+          {{ end }}
       volumes:
-        - name: cache-volume
-          emptyDir: {}
+        {{ if .Values.tls.enabled }}
+        - name: {{ include "auth-handler.name" . }}-postgres-server-cert    
+          secret:
+            defaultMode: 416
+            secretName: {{ include "auth-handler.name" . }}-postgres-server-cert
+        - name: {{ include "auth-handler.name" . }}-ca-cert    
+          secret:
+            defaultMode: 416
+            secretName: {{ include "auth-handler.name" . }}-ca-cert
+        {{ end }}
+        

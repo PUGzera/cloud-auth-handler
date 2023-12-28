@@ -14,7 +14,14 @@ spec:
       name: {{ include "auth-handler.name" . }}-keycloak-postgres-db-secret
       key: password
   http:
+  {{ if .Values.tls.enabled }}
+    tlsSecret: {{ include "auth-handler.name" . }}-keycloak-server-cert
+    httpsPort: 8080
+  {{ else }}
     httpEnabled: true
+    httpPort: 8080
+  {{ end }}
   hostname:
     strict: false
     strictBackchannel: false
+    hostname: keycloak.auth-handler.com

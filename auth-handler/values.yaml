@@ -12,3 +12,9 @@ ingress:
 keycloak:
   client:
     secret: NOTVERYSECRET23
+
+tls:
+  enabled: true
+
+cert-manager:
+  installCRDs: true

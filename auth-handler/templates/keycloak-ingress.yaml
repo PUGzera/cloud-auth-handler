@@ -2,7 +2,15 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ include "auth-handler.name" . }}-keycloak-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
 spec:
+  {{ if .Values.tls.enabled }}
+  tls:
+  - hosts:
+    - {{ .Values.ingress.host }}
+    secretName: {{ include "auth-handler.name" . }}-keycloak-server-cert
+  {{ end }}
   rules:
     - host: {{ .Values.ingress.host }}
       http:
