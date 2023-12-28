@@ -13,6 +13,13 @@ spec:
     passwordSecret:
       name: {{ include "auth-handler.name" . }}-keycloak-postgres-db-secret
       key: password
+    url:
+        "jdbc:postgresql://{{ include "auth-handler.name" . }}-keycloak-postgres-db:5432/{{ .Values.postgres.auth.db }}?\
+         user={{ .Values.postgres.auth.username }}&\
+         sslmode=verify-full&\
+         sslcert=/var/run/secrets/{{ include "auth-handler.name" . }}-postgres-client-cert/tls.crt&\
+         sslkey=/var/run/secrets/{{ include "auth-handler.name" . }}-postgres-client-cert/tls.key&\
+         sslrootcert=/var/run/secrets/{{ include "auth-handler.name" . }}-postgres-client-cert/ca.crt"
   http:
   {{ if .Values.tls.enabled }}
     tlsSecret: {{ include "auth-handler.name" . }}-keycloak-server-cert
@@ -25,3 +32,22 @@ spec:
     strict: false
     strictBackchannel: false
     hostname: keycloak.auth-handler.com
+  unsupported:
+    podTemplate:
+      spec:
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+        containers:
+        - volumeMounts:
+            {{ if .Values.tls.enabled }}
+            - name: {{ include "auth-handler.name" . }}-postgres-client-cert
+              readOnly: true
+              mountPath: "/var/run/secrets/{{ include "auth-handler.name" . }}-postgres-client-cert"
+            {{ end }}
+        volumes:
+          {{ if .Values.tls.enabled }}
+          - name: {{ include "auth-handler.name" . }}-postgres-client-cert    
+            secret:
+              secretName: {{ include "auth-handler.name" . }}-postgres-client-cert
+          {{ end }}

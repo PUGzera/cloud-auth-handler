@@ -1,0 +1,10 @@
+{{ $user := .Values.postgres.auth.username }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "auth-handler.name" . }}-postgres-hba-config
+data:
+    pg_hba.conf: |
+        # TYPE  DATABASE        USER            ADDRESS                 METHOD
+        local   postgres        {{ $user }}                             trust
+        hostssl all             {{ $user }}     all                     cert clientcert=verify-full

@@ -1,7 +1,7 @@
 postgres:
   auth:
     db: keycloak
-    username: test
+    username: keycloak
     password: testpassword
   service:
     port: 5432

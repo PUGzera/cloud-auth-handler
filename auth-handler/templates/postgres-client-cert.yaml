@@ -5,8 +5,7 @@ metadata:
   name: {{ include "auth-handler.name" . }}-postgres-client-cert
 spec:
   secretName: {{ include "auth-handler.name" . }}-postgres-client-cert
-  dnsNames: 
-    - keycloak.auth-handler.com
+  commonName: {{ .Values.postgres.auth.username }}
   isCA: false
   usages:
     - client auth

@@ -30,7 +30,9 @@ spec:
             - "-c" 
             - "ssl_key_file=/var/run/secrets/{{ include "auth-handler.name" . }}-postgres-server-cert/tls.key"
             - "-c" 
-            - "ssl_ca_file=/var/run/secrets/{{ include "auth-handler.name" . }}-ca-cert/ca.crt"
+            - "ssl_ca_file=/var/run/secrets/{{ include "auth-handler.name" . }}-postgres-server-cert/ca.crt"
+            - "-c"
+            - "hba_file=/etc/postgresql/pg_hba.conf"
           {{ end }}
           env:
           {{ if .Values.tls.enabled }}
@@ -57,9 +59,9 @@ spec:
           - name: {{ include "auth-handler.name" . }}-postgres-server-cert
             readOnly: true
             mountPath: "/var/run/secrets/{{ include "auth-handler.name" . }}-postgres-server-cert"
-          - name: {{ include "auth-handler.name" . }}-ca-cert
+          - name: {{ include "auth-handler.name" . }}-postgres-hba-config
             readOnly: true
-            mountPath: "/var/run/secrets/{{ include "auth-handler.name" . }}-ca-cert"
+            mountPath: "/etc/postgresql"
           {{ end }}
       volumes:
         {{ if .Values.tls.enabled }}
@@ -67,9 +69,9 @@ spec:
           secret:
             defaultMode: 416
             secretName: {{ include "auth-handler.name" . }}-postgres-server-cert
-        - name: {{ include "auth-handler.name" . }}-ca-cert    
-          secret:
+        - name: {{ include "auth-handler.name" . }}-postgres-hba-config    
+          configMap:
             defaultMode: 416
-            secretName: {{ include "auth-handler.name" . }}-ca-cert
+            name: {{ include "auth-handler.name" . }}-postgres-hba-config
         {{ end }}
         
