@@ -5,5 +5,5 @@ metadata:
   name: {{ include "auth-handler.name" . }}-keycloak-ca
 spec:
   ca:
-    secretName: {{ include "auth-handler.name" . }}-ca-cert
+    secretName: {{ include "auth-handler.name" . }}-keycloak-ca-cert
 {{ end }}

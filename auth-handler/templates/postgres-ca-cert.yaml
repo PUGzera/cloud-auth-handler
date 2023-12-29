@@ -2,12 +2,12 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: {{ include "auth-handler.name" . }}-ca-cert
+  name: {{ include "auth-handler.name" . }}-postgres-ca-cert
   annotations:
 spec:
   isCA: true
-  commonName: {{ include "auth-handler.name" . }}-ca-cert
-  secretName: {{ include "auth-handler.name" . }}-ca-cert
+  commonName: {{ include "auth-handler.name" . }}-postgres
+  secretName: {{ include "auth-handler.name" . }}-postgres-ca-cert
   privateKey:
     algorithm: ECDSA
     size: 256

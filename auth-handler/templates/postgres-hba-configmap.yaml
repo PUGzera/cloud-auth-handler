@@ -1,4 +1,5 @@
 {{ $user := .Values.postgres.auth.username }}
+{{ if .Values.tls.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -8,3 +9,4 @@ data:
         # TYPE  DATABASE        USER            ADDRESS                 METHOD
         local   postgres        {{ $user }}                             trust
         hostssl all             {{ $user }}     all                     cert clientcert=verify-full
+{{ end }}

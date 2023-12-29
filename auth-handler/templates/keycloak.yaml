@@ -13,13 +13,15 @@ spec:
     passwordSecret:
       name: {{ include "auth-handler.name" . }}-keycloak-postgres-db-secret
       key: password
+    {{ if .Values.tls.enabled }}
     url:
         "jdbc:postgresql://{{ include "auth-handler.name" . }}-keycloak-postgres-db:5432/{{ .Values.postgres.auth.db }}?\
          user={{ .Values.postgres.auth.username }}&\
          sslmode=verify-full&\
          sslcert=/var/run/secrets/{{ include "auth-handler.name" . }}-postgres-client-cert/tls.crt&\
-         sslkey=/var/run/secrets/{{ include "auth-handler.name" . }}-postgres-client-cert/tls.key&\
+         sslkey=/etc/pg-ssl-key/tls.key&\
          sslrootcert=/var/run/secrets/{{ include "auth-handler.name" . }}-postgres-client-cert/ca.crt"
+    {{ end }}
   http:
   {{ if .Values.tls.enabled }}
     tlsSecret: {{ include "auth-handler.name" . }}-keycloak-server-cert
@@ -36,18 +38,36 @@ spec:
     podTemplate:
       spec:
         securityContext:
-          runAsNonRoot: true
           runAsUser: 1000
+          fsGroup: 1000
+        {{ if .Values.tls.enabled }}
+        initContainers:
+        - name: convert-pem-to-der-for-jdbc
+          image: alpine/openssl:latest
+          command: ["openssl", "rsa", "-in", "/var/run/secrets/auth-handler-postgres-client-cert/tls.key", "-out", "/etc/pg-ssl-key/tls.key", "-outform", "DER"]
+          volumeMounts:
+            - name: {{ include "auth-handler.name" . }}-postgres-client-cert
+              readOnly: true
+              mountPath: "/var/run/secrets/{{ include "auth-handler.name" . }}-postgres-client-cert"
+            - name: pg-ssl-key
+              mountPath: /etc/pg-ssl-key
+        {{ end }}
         containers:
         - volumeMounts:
             {{ if .Values.tls.enabled }}
             - name: {{ include "auth-handler.name" . }}-postgres-client-cert
               readOnly: true
               mountPath: "/var/run/secrets/{{ include "auth-handler.name" . }}-postgres-client-cert"
+            - name: pg-ssl-key
+              readOnly: true
+              mountPath: /etc/pg-ssl-key
             {{ end }}
         volumes:
           {{ if .Values.tls.enabled }}
+          - name: pg-ssl-key
+            emptyDir: {}
           - name: {{ include "auth-handler.name" . }}-postgres-client-cert    
             secret:
+              defaultMode: 416
               secretName: {{ include "auth-handler.name" . }}-postgres-client-cert
           {{ end }}
