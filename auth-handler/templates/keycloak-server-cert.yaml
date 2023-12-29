@@ -7,7 +7,6 @@ spec:
   secretName: {{ include "auth-handler.name" . }}-keycloak-server-cert
   dnsNames: 
     - {{ .Values.ingress.host }}
-    - {{ include "auth-handler.name" . }}-keycloak-service
   isCA: false
   usages:
     - server auth

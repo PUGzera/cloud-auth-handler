@@ -22,3 +22,10 @@ spec:
                 name: {{ include "auth-handler.name" . }}-keycloak-service
                 port:
                   number: 8080
+          - path: /resources
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "auth-handler.name" . }}-keycloak-service
+                port:
+                  number: 8080

@@ -1,6 +1,8 @@
 repositories:
  - name: jetstack
    url: https://charts.jetstack.io
+ - name: istio
+   url: https://istio-release.storage.googleapis.com/charts
 
 
 environments:
@@ -17,16 +19,44 @@ releases:
   set:
   - name: installCRDs
     value: true
+- name: istio
+  namespace: istio-system
+  createNamespace: true   
+  chart: istio
+  disableValidationOnInstall: true
+  needs:
+  - cert-manager/cert-manager
+- name: istiod
+  namespace: istio-system
+  createNamespace: true   
+  chart: istio/istiod
+  disableValidationOnInstall: true
+  needs:
+  - istio-system/istio
 {{ end }}
 - name: auth-handler
   namespace: auth-handler
-  createNamespace: true   
   chart: auth-handler
   disableValidationOnInstall: true
   set:
   - name: tls.enabled
     value: {{ .Values.tls.enabled }}
 {{ if .Values.tls.enabled }}
+  hooks:
+  - events:
+      - presync
+    showlogs: true
+    command: sh
+    args:
+      - -c
+      - "kubectl create namespace auth-handler || exit 0"
+  - events:
+      - presync
+    showlogs: true
+    command: sh
+    args:
+      - -c
+      - "kubectl label namespace auth-handler istio-injection=enabled || exit 0"
   needs:
-    - cert-manager/cert-manager
+    - istio-system/istiod
 {{ end }}

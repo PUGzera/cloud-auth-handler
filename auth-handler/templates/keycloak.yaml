@@ -26,16 +26,18 @@ spec:
   {{ if .Values.tls.enabled }}
     tlsSecret: {{ include "auth-handler.name" . }}-keycloak-server-cert
     httpsPort: 8080
-  {{ else }}
-    httpEnabled: true
-    httpPort: 8080
   {{ end }}
+    httpEnabled: true
+    httpPort: 8081 
   hostname:
     strict: false
     strictBackchannel: false
-    hostname: keycloak.auth-handler.com
   unsupported:
     podTemplate:
+      metadata:
+        annotations:
+          traffic.sidecar.istio.io/excludeOutboundPorts: "8080"
+          traffic.sidecar.istio.io/excludeInboundPorts: "8080"
       spec:
         securityContext:
           runAsUser: 1000
@@ -62,6 +64,11 @@ spec:
               readOnly: true
               mountPath: /etc/pg-ssl-key
             {{ end }}
+          env:
+          {{ if .Values.tls.enabled }}
+          - name: KC_PROXY
+            value: reencrypt
+          {{ end }}
         volumes:
           {{ if .Values.tls.enabled }}
           - name: pg-ssl-key
