@@ -26,18 +26,15 @@ spec:
   {{ if .Values.tls.enabled }}
     tlsSecret: {{ include "auth-handler.name" . }}-keycloak-server-cert
     httpsPort: 8080
-  {{ end }}
+  {{ else }}
     httpEnabled: true
-    httpPort: 8081 
+    httpPort: 8080
+  {{ end }}
   hostname:
     strict: false
     strictBackchannel: false
   unsupported:
     podTemplate:
-      metadata:
-        annotations:
-          traffic.sidecar.istio.io/excludeOutboundPorts: "8080"
-          traffic.sidecar.istio.io/excludeInboundPorts: "8080"
       spec:
         securityContext:
           runAsUser: 1000
