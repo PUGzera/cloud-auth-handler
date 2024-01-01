@@ -1,0 +1,26 @@
+{{ if .Values.tls.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "auth-handler.name" . }}-gateway-proxy-config
+data:
+    nginx.conf: |
+        events {
+            worker_connections  1024;
+        }
+        http {
+            server {
+                listen 443 ssl;
+
+                ssl_certificate /var/run/secrets/{{ include "auth-handler.name" . }}-gateway-proxy-certs/tls.crt;
+                ssl_certificate_key /var/run/secrets/{{ include "auth-handler.name" . }}-gateway-proxy-certs/tls.key;
+
+                location /login {
+                    proxy_pass https://{{ include "auth-handler.name" . }}-keycloak-service:8080/realms/auth-handler/protocol/openid-connect/auth;
+                }
+                location ~ /resources/(.*)$ {
+                    proxy_pass https://{{ include "auth-handler.name" . }}-keycloak-service:8080/resources/$1;
+                }
+            }
+        }
+{{ end }}

@@ -4,9 +4,21 @@ metadata:
   name: {{ include "auth-handler.name" . }}-virtual-service
 spec:
   hosts:
-  - "*"
+  - {{ .Values.gateway.host }}
   gateways:
   - {{ include "auth-handler.name" . }}-gateway
+  {{ if .Values.tls.enabled }}
+  tls:
+  - match:
+    - port: 443
+      sniHosts:
+      - "{{ .Values.gateway.host }}"
+    route:
+    - destination:
+        host: {{ include "auth-handler.name" . }}-gateway-proxy-service
+        port:
+          number: 443
+  {{ else }}
   http:
   - match:
     - uri:
@@ -18,3 +30,4 @@ spec:
         host: "{{ include "auth-handler.name" . }}-keycloak-service"
         port:
           number: 8080
+  {{ end }}

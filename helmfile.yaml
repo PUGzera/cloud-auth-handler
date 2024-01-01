@@ -39,6 +39,9 @@ releases:
   namespace: istio-ingress
   chart: istio/gateway
   wait: true
+  set: 
+  - name: service.loadBalancerIP
+    value: {{ .Values.istio.gateways.ingressgateway.loadBalancerIP }}
   needs:
   - istio-system/istio
 
@@ -70,6 +73,8 @@ releases:
   set:
   - name: tls.enabled
     value: {{ .Values.tls.enabled }}
+  - name: gateway.host
+    value: "auth.{{ .Values.istio.gateways.ingressgateway.loadBalancerIP }}.nip.io"
 {{ if .Values.tls.enabled }}
   hooks:
   - events:

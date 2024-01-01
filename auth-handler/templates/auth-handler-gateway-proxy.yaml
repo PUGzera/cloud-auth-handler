@@ -1,0 +1,39 @@
+{{ if .Values.tls.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "auth-handler.name" . }}-gateway-proxy
+  labels:
+    app: {{ include "auth-handler.name" . }}-gateway-proxy
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: {{ include "auth-handler.name" . }}-gateway-proxy
+  template:
+    metadata:
+      labels:
+        app: {{ include "auth-handler.name" . }}-gateway-proxy
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: {{ include "auth-handler.name" . }}-gateway-proxy-config
+          readOnly: true
+          mountPath: /etc/nginx
+        - name: {{ include "auth-handler.name" . }}-gateway-proxy-certs
+          readOnly: true
+          mountPath: /var/run/secrets/{{ include "auth-handler.name" . }}-gateway-proxy-certs
+      volumes:
+      - name: {{ include "auth-handler.name" . }}-gateway-proxy-config
+        configMap:
+          defaultMode: 416
+          name: {{ include "auth-handler.name" . }}-gateway-proxy-config
+      - name: {{ include "auth-handler.name" . }}-gateway-proxy-certs
+        secret:
+          defaultMode: 416
+          secretName: {{ include "auth-handler.name" . }}-keycloak-server-cert
+{{ end }}

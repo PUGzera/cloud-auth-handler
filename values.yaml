@@ -1,2 +1,7 @@
 tls:
   enabled: true
+
+istio:
+  gateways:
+    ingressgateway:
+      loadBalancerIP: 192.168.49.53

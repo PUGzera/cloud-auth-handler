@@ -6,8 +6,8 @@ postgres:
   service:
     port: 5432
 
-ingress:
-  host: auth.192.168.49.2.nip.io
+gateway:
+  host: auth.192.168.49.51.nip.io
 
 keycloak:
   client:
