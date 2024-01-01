@@ -7,7 +7,6 @@ spec:
   - {{ .Values.gateway.host }}
   gateways:
   - {{ include "auth-handler.name" . }}-gateway
-  {{ if .Values.tls.enabled }}
   tls:
   - match:
     - port: 443
@@ -18,16 +17,3 @@ spec:
         host: {{ include "auth-handler.name" . }}-gateway-proxy-service
         port:
           number: 443
-  {{ else }}
-  http:
-  - match:
-    - uri:
-        exact: /realms/auth-handler/protocol/openid-connect/auth
-    - uri:
-        prefix: /resources
-    route:
-    - destination:
-        host: "{{ include "auth-handler.name" . }}-keycloak-service"
-        port:
-          number: 8080
-  {{ end }}

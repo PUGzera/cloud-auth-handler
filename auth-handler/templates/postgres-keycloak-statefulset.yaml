@@ -21,7 +21,6 @@ spec:
         - name: {{ include "auth-handler.name" . }}-keycloak-postgresql-db
           image: postgres:latest
           args:
-          {{ if .Values.tls.enabled }}
             - "-c" 
             - "ssl=on"
             - "-c" 
@@ -32,12 +31,9 @@ spec:
             - "ssl_ca_file=/var/run/secrets/{{ include "auth-handler.name" . }}-postgres-server-cert/ca.crt"
             - "-c"
             - "hba_file=/etc/postgresql/pg_hba.conf"
-          {{ end }}
           env:
-          {{ if .Values.tls.enabled }}
             - name: PGSSLMODE
               value: verify-ca
-          {{ end }}
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
@@ -54,16 +50,13 @@ spec:
                   name: {{ include "auth-handler.name" . }}-keycloak-postgres-db-secret
                   key: db
           volumeMounts:
-          {{ if .Values.tls.enabled }}
           - name: {{ include "auth-handler.name" . }}-postgres-server-cert
             readOnly: true
             mountPath: "/var/run/secrets/{{ include "auth-handler.name" . }}-postgres-server-cert"
           - name: {{ include "auth-handler.name" . }}-postgres-hba-config
             readOnly: true
             mountPath: "/etc/postgresql"
-          {{ end }}
       volumes:
-        {{ if .Values.tls.enabled }}
         - name: {{ include "auth-handler.name" . }}-postgres-server-cert    
           secret:
             defaultMode: 416
@@ -71,6 +64,4 @@ spec:
         - name: {{ include "auth-handler.name" . }}-postgres-hba-config    
           configMap:
             defaultMode: 416
-            name: {{ include "auth-handler.name" . }}-postgres-hba-config
-        {{ end }}
-        
+            name: {{ include "auth-handler.name" . }}-postgres-hba-config      

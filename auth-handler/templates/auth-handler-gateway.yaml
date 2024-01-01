@@ -6,7 +6,6 @@ spec:
   selector:
     istio: ingressgateway
   servers:
-  {{ if .Values.tls.enabled }}
   - port:
       number: 443
       name: https
@@ -15,11 +14,3 @@ spec:
       mode: PASSTHROUGH
     hosts:
     - {{ .Values.gateway.host }}
-  {{ else }}
-  - port:
-      number: 80
-      name: http
-      protocol: HTTP
-    hosts:
-    - {{ .Values.gateway.host }}
-  {{ end }}

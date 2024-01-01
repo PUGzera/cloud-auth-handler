@@ -13,7 +13,6 @@ environments:
     - values.yaml
 
 releases:
-{{ if .Values.tls.enabled }}
 ##### CERT MANAGER #####
 - name: cert-manager
   namespace: cert-manager
@@ -51,7 +50,7 @@ releases:
   disableValidationOnInstall: true
   needs:
   - istio-system/istio
-{{ end }}
+
 ##### METALLB #####
 - name: metallb
   namespace: metallb-system
@@ -71,11 +70,8 @@ releases:
   chart: auth-handler
   disableValidationOnInstall: true
   set:
-  - name: tls.enabled
-    value: {{ .Values.tls.enabled }}
   - name: gateway.host
     value: "auth.{{ .Values.istio.gateways.ingressgateway.loadBalancerIP }}.nip.io"
-{{ if .Values.tls.enabled }}
   hooks:
   - events:
       - presync
@@ -96,4 +92,3 @@ releases:
     - istio-ingress/istio-ingressgateway
     - istio-system/istio-config
     - metallb-system/metallb-config
-{{ end }}
